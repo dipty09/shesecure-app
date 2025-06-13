@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { playPanicSound, stopPanicSound } from '../utils/playPanicSound';
@@ -28,8 +28,10 @@ const SOS = () => {
   const canvasRef = useRef(null);
   const [location, setLocation] = useState(null);
 
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+  const recognition = useMemo(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    return SpeechRecognition ? new SpeechRecognition() : null;
+  }, []);
 
   const getLocation = () => {
     return new Promise((resolve, reject) => {
@@ -39,7 +41,7 @@ const SOS = () => {
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
           };
-          setLocation(loc); // store for map
+          setLocation(loc);
           resolve(loc);
         },
         (err) => reject(err),
@@ -148,7 +150,7 @@ const SOS = () => {
     recognition.start();
 
     return () => recognition.stop();
-  }, [handleSOS]);
+  }, [handleSOS, recognition]);
 
   useEffect(() => {
     const setupCamera = async () => {
@@ -164,9 +166,11 @@ const SOS = () => {
 
     setupCamera();
 
+    const currentVideo = videoRef.current;
+
     return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      if (currentVideo && currentVideo.srcObject) {
+        currentVideo.srcObject.getTracks().forEach((track) => track.stop());
       }
     };
   }, []);
