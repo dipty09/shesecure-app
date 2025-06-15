@@ -20,7 +20,7 @@ app.use('/api/emergency-contacts', contactRoutes);
 app.use('/api/location',locationRoutes);
 
 
-app.get('/api/test',(_req,res)=>{
+app.get('/',(_req,res)=>{
     res.send({message:'Women saftey app Backend is running'});
 });
 
